@@ -60,11 +60,16 @@ class Game():
 
 	def update_possible_moves(self, piece):
 		self.n_possible_moves = 0
+		self.possible_moves = []
 		for row in range(8):
 			for col in range(8):
 				if self.legal_move(piece, row, col):
 					self.table[row][col] = 'x'
 					self.n_possible_moves += 1
+					self.possible_moves.append((row,col))
+
+	def get_possible_moves(self):
+		return self.possible_moves
 
 	def calc_score(self):
 		score_w = 0

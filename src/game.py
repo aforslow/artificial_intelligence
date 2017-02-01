@@ -36,10 +36,18 @@ class Game():
 			print "\n"
 			print "===================== NEW ROUND ======================="
 			print "Current game board: "
-			if (self.n_pieces % 2 == 0):
+			if (self.n_pieces % 2 == 1):
 				piece = 'w'
 			else:
 				piece = 'b'
+				self.update_possible_moves(piece)
+				print self.table[4][2]
+				print self.table[4][3]
+				self.delete_tips()
+				self.computer_play_next_round(piece, 4, 2)
+				self.print_table()
+				
+				continue
 			self.update_possible_moves(piece)
 			print "Possible number of moves for",
 			print "player", piece +":", self.n_possible_moves
@@ -71,6 +79,9 @@ class Game():
 	def get_possible_moves(self):
 		return self.possible_moves
 
+	def get_state(self):
+		return self.table
+
 	def calc_score(self):
 		score_w = 0
 		score_b = 0
@@ -88,6 +99,12 @@ class Game():
 		print "Score: "
 		print "White: ", score_w, "Black: ", score_b
 		print "______________________"	
+
+	def computer_play_next_round(self, piece, x, y):
+		print piece, "player next."
+
+		self.put_piece(piece, x, y)
+		print "Computer played:", str(x+1) + chr(y+96) 
 
 	def play_next_round(self, piece):
 		print piece, "player next."

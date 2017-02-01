@@ -1,7 +1,8 @@
+#!usr/bin/env python
+
 import sys
 
-class Table():
-	
+class Game():
 	def __init__(self):
 		self.table = [['_' for x in range(8)] for y in range(8)]
 		self.table[3][3] = 'b'
@@ -41,7 +42,7 @@ class Table():
 				piece = 'b'
 			self.update_possible_moves(piece)
 			print "Possible number of moves for",
-			print piece, "player:", self.n_possible_moves
+			print "player", piece +":", self.n_possible_moves
 			if (self.quitted or self.n_possible_moves == 0):
 				break
 			self.print_table()
@@ -185,10 +186,6 @@ class IllegalMoveError(Exception):
 	pass
 
 if __name__ == "__main__":
-	t = Table()
-	t.play()
-	# t.print_table()
-	# t.put_piece('w', 4, 5)
-	# t.print_table()
-	# print(chr(1))
+	game = Game()
+	game.play()
 

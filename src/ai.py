@@ -6,6 +6,7 @@ class AI():
 		self.depth = 3
 		self.alpha = -float("inf")
 		self.beta = float("inf")
+		self.root = Node(game.get_init_state())
 
 	def make_move(self):
 		alphabeta()
@@ -32,10 +33,21 @@ class AI():
 
 class Node():
 
-	def __init__(self):
+	def __init__(self, state):
 		self.child_list = []
 		self.value = None
-		self.state = None
+		self.state = state
 
-	def add_child(self):
-		pass
+	def add_children(self):
+		moves = game.get_possible_moves()
+		for move in moves:
+			piece = game.get_current_piece()
+			self.child_list.append(
+				game.computer_play_next_round(piece, move[0], move[1]))
+
+
+
+
+
+
+	

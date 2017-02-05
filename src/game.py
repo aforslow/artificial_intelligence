@@ -4,14 +4,18 @@ import sys
 
 class Game():
 	def __init__(self):
-		self.table = [['_' for x in range(8)] for y in range(8)]
-		self.table[3][3] = 'b'
-		self.table[3][4] = 'w'
-		self.table[4][3] = 'w'
-		self.table[4][4] = 'b'
+		self.table = get_init_state()
 		self.n_pieces = 4
 		self.max_pieces = 8*8
 		self.n_possible_moves = 0
+
+	def get_init_state(self):
+		table = [['_' for x in range(8)] for y in range(8)]
+		table[3][3] = 'b'
+		table[3][4] = 'w'
+		table[4][3] = 'w'
+		table[4][4] = 'b'
+		return table
 
 	def print_table(self):
 		print ""
@@ -36,7 +40,7 @@ class Game():
 			print "\n"
 			print "===================== NEW ROUND ======================="
 			print "Current game board: "
-			if (self.n_pieces % 2 == 1):
+			if (self.n_pieces % 2 == 0):
 				piece = 'w'
 			else:
 				piece = 'b'
@@ -82,6 +86,15 @@ class Game():
 	def get_state(self):
 		return self.table
 
+	def get_current_piece(self):
+		if (self.n_pieces % 2 == 0):
+			return 'w'
+		else:
+			return 'b'
+
+	def set_state(self, state):
+		self.table = state
+
 	def calc_score(self):
 		score_w = 0
 		score_b = 0
@@ -100,10 +113,18 @@ class Game():
 		print "White: ", score_w, "Black: ", score_b
 		print "______________________"	
 
+	def play_from_state(self, state, current_piece, x, y):
+		if current_piece == 'w':
+			piece = 'b'
+		else:
+			piece = 'w'
+		self.put_piece(state, piece, x, y)
+		return self.table
+
 	def computer_play_next_round(self, piece, x, y):
 		print piece, "player next."
 
-		self.put_piece(piece, x, y)
+		self.put_piece(self.table, piece, x, y)
 		print "Computer played:", str(x+1) + chr(y+96) 
 
 	def play_next_round(self, piece):
@@ -120,7 +141,7 @@ class Game():
 					y = ord(coords[1]) - 97
 					if not (0 <= y < 8):
 						raise ValueError
-					self.put_piece(piece, x, y)
+					self.put_piece(self.table, piece, x, y)
 				else:
 					raise ValueError
 				break
@@ -140,7 +161,8 @@ class Game():
 		print "Quitting..."
 		sys.exit()
 
-	def put_piece(self, piece, x, y):
+	def put_piece(self, state, piece, x, y):
+		self.table = state
 		if (piece == 'w' or piece == 'b'):
 			if (self.legal_move(piece, x, y)):
 				self.convert_table(piece, x, y)

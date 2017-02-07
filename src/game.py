@@ -4,7 +4,7 @@ import sys
 
 class Game():
 	def __init__(self):
-		self.table = get_init_state()
+		self.table = self.get_init_state()
 		self.n_pieces = 4
 		self.max_pieces = 8*8
 		self.n_possible_moves = 0

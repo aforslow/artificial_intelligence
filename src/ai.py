@@ -1,15 +1,17 @@
 #!usr/bin/env python
+import game
 
 class AI():
 
-	def __init__(self, depth, ai_piece):
+	def __init__(self, game, depth, ai_piece):
 		self.depth = depth
 		self.alpha = -float("inf")
 		self.beta = float("inf")
 		self.ai_piece = ai_piece
+		self.game = game
 		
 	def get_next_state(self):
-		self.root = Node(game.get_init_state(), self.ai_piece, self.ai_piece)
+		self.root = Node(self.game, self.game.get_init_state(), self.ai_piece, self.ai_piece)
 		alphabeta()
 		max_v = -float("inf")
 		max_node = None
@@ -45,13 +47,14 @@ class AI():
 
 class Node():
 
-	def __init__(self, state, ai_piece, current_piece):
+	def __init__(self, game, state, ai_piece, current_piece):
+		self.game = game
 		self.child_list = []
 		self.value = None
 		self.state = state
 		self.ai_piece = ai_piece
 		self.current_piece = current_piece
-		self.heuristic_point = game.get_score(state, ai_piece)
+		self.heuristic_point = self.game.get_score(state, ai_piece)
 		self.v = self.heuristic_point
 
 	def set_v(self, v):
@@ -61,10 +64,10 @@ class Node():
 		return v
 
 	def add_children(self):
-		moves = game.get_possible_moves(self.state, self.current_piece)
+		moves = self.game.get_possible_moves(self.state, self.current_piece)
 		for move in moves:
 			#piece = game.get_state_piece(self.state)
-			state, next_piece = game.play_from_state(self.state, self.current_piece, move[0], move[1])
+			state, next_piece = self.game.play_from_state(self.state, self.current_piece, move[0], move[1])
 			n = Node(state, next_piece)
 			self.child_list.append(n)
 

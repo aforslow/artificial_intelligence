@@ -1,6 +1,7 @@
 #!usr/bin/env python
 
 import sys
+from ai import AI
 
 class Game():
 	def __init__(self):
@@ -45,7 +46,7 @@ class Game():
 				AI_player = raw_input("Which player should AI be? ('b' or 'w')")
 				if (AI_player == 'w' or AI_player == 'b'):
 					self.computer_piece = AI_player
-					self.AI = AI(3, AI_player)
+					self.AI = AI(self, 3, AI_player)
 					break
 				else:
 					print "Wrong input format, try again (write w or b)"
@@ -262,7 +263,7 @@ class Game():
 class IllegalMoveError(Exception):
 	pass
 
-if __name__ == "__main__":
-	game = Game()
-	game.play()
+# if __name__ == "__main__":
+# 	game = Game()
+# 	game.play()
 

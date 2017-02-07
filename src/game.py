@@ -8,6 +8,10 @@ class Game():
 		self.n_pieces = 4
 		self.max_pieces = 8*8
 		self.n_possible_moves = 0
+		self.players = ['w', 'b']
+		self.computer_piece = 'b'
+		self.points = {'w':2, 'b':2}
+		self.next_player = {'w':'b', 'b':'w'}
 
 	def get_init_state(self):
 		table = [['_' for x in range(8)] for y in range(8)]
@@ -40,27 +44,24 @@ class Game():
 			print "\n"
 			print "===================== NEW ROUND ======================="
 			print "Current game board: "
-			if (self.n_pieces % 2 == 0):
-				piece = 'w'
-			else:
-				piece = 'b'
+			piece = self.players[self.n_pieces % 2]
+			if (piece == self.computer_piece):
 				self.update_possible_moves(piece)
 				print self.table[4][2]
 				print self.table[4][3]
 				self.delete_tips()
 				self.computer_play_next_round(piece, 4, 2)
 				self.print_table()
-				
-				continue
-			self.update_possible_moves(piece)
-			print "Possible number of moves for",
-			print "player", piece +":", self.n_possible_moves
-			if (self.quitted or self.n_possible_moves == 0):
-				break
-			self.print_table()
-			self.delete_tips()
-			self.play_next_round(piece)
-			self.print_score()
+			else:
+				self.update_possible_moves(piece)
+				print "Possible number of moves for",
+				print "player", piece +":", self.n_possible_moves
+				if (self.quitted or self.n_possible_moves == 0):
+					break
+				self.print_table()
+				self.delete_tips()
+				self.play_next_round(piece)
+				self.print_score()
 		print "Game finished!"
 		self.print_score()
 
@@ -75,13 +76,18 @@ class Game():
 		self.possible_moves = []
 		for row in range(8):
 			for col in range(8):
-				if self.legal_move(piece, row, col):
+				if self.legal_move(self.table, piece, row, col):
 					self.table[row][col] = 'x'
 					self.n_possible_moves += 1
 					self.possible_moves.append((row,col))
 
-	def get_possible_moves(self):
-		return self.possible_moves
+	def get_possible_moves(self, state, piece):
+		possible_moves = []
+		for row in range(8):
+			for col in range(8):
+				if self.legal_move(state, piece, row, col):
+					possible_moves.append((row,col))
+		return possible_moves
 
 	def get_state(self):
 		return self.table
@@ -92,8 +98,29 @@ class Game():
 		else:
 			return 'b'
 
+	def get_state_piece(self, state):
+		n_pieces = get_piece_count(state)
+		return self.players[n_pieces % 2]
+
+	def get_piece_count(self, state):
+		n_pieces = 0
+		for row in range(8):
+			for col in range(8):
+				if state[row][col] == 'w' or state[row][col] == 'b':
+					n_pieces += 1
+		return n_pieces
+
 	def set_state(self, state):
 		self.table = state
+		self.n_pieces = get_piece_count(self.table)
+
+	def get_score(self, state, piece):
+		score = 0
+		for row in range(8):
+			for col in range(8):
+				if (state[row][col] == piece):
+					score += 1
+		return score
 
 	def calc_score(self):
 		score_w = 0
@@ -114,16 +141,12 @@ class Game():
 		print "______________________"	
 
 	def play_from_state(self, state, current_piece, x, y):
-		if current_piece == 'w':
-			piece = 'b'
-		else:
-			piece = 'w'
+		piece = self.next_player[current_piece]
 		self.put_piece(state, piece, x, y)
-		return self.table
+		return self.table, piece
 
 	def computer_play_next_round(self, piece, x, y):
 		print piece, "player next."
-
 		self.put_piece(self.table, piece, x, y)
 		print "Computer played:", str(x+1) + chr(y+96) 
 
@@ -164,7 +187,7 @@ class Game():
 	def put_piece(self, state, piece, x, y):
 		self.table = state
 		if (piece == 'w' or piece == 'b'):
-			if (self.legal_move(piece, x, y)):
+			if (self.legal_move(state, piece, x, y)):
 				self.convert_table(piece, x, y)
 				self.table[x][y] = piece
 				self.n_pieces += 1
@@ -180,7 +203,7 @@ class Game():
 			for col_dir in range(-1,2):
 				if (row_dir == 0 and col_dir == 0):
 					continue
-				if self.direction_ok(piece, x, y, row_dir, col_dir):
+				if self.direction_ok(self.table, piece, x, y, row_dir, col_dir):
 					self.convert_direction(piece, x, y, row_dir, col_dir)
 
 	def convert_direction(self, piece, x, y, row_dir, col_dir):
@@ -192,30 +215,30 @@ class Game():
 			x += row_dir
 			y += col_dir
 
-	def legal_move(self, piece, x, y):
-		if (self.table[x][y] == '_'):
+	def legal_move(self, state, piece, x, y):
+		if (state[x][y] == '_'):
 			for row_dir in range(-1,2):
 				for col_dir in range(-1,2):
 					if (row_dir == 0 and col_dir == 0):
 						continue					
-					if self.direction_ok(piece, x, y, row_dir, col_dir):
+					if self.direction_ok(state, piece, x, y, row_dir, col_dir):
 						return True
 		return False
 
-	def direction_ok(self, piece, x, y, row_dir, col_dir):
+	def direction_ok(self, state, piece, x, y, row_dir, col_dir):
 		x += row_dir
 		y += col_dir
 		if not self.in_boundaries(x,y):
 			return False
-		if piece == 'w' and self.table[x][y] != 'b':
+		if piece == 'w' and state[x][y] != 'b':
 			return False
-		if piece == 'b' and self.table[x][y] != 'w':
+		if piece == 'b' and state[x][y] != 'w':
 			return False
 
 		x += row_dir
 		y += col_dir
 		while (self.in_boundaries(x,y)): 
-			if (self.table[x][y] == piece):
+			if (state[x][y] == piece):
 				return True
 			x += row_dir
 			y += col_dir		

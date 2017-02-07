@@ -39,6 +39,19 @@ class Game():
 
 	def play(self):
 		self.quitted = False
+
+		while True:
+			try:
+				AI_player = raw_input("Which player should AI be? ('b' or 'w')")
+				if (AI_player == 'w' or AI_player == 'b'):
+					self.computer_piece = AI_player
+					self.AI = AI(3, AI_player)
+					break
+				else:
+					print "Wrong input format, try again (write w or b)"
+			except:
+				print "Wrong input format caused error. Write w or b"
+
 		while (self.n_pieces < self.max_pieces):
 			
 			print "\n"
@@ -46,11 +59,8 @@ class Game():
 			print "Current game board: "
 			piece = self.players[self.n_pieces % 2]
 			if (piece == self.computer_piece):
-				self.update_possible_moves(piece)
-				print self.table[4][2]
-				print self.table[4][3]
-				self.delete_tips()
-				self.computer_play_next_round(piece, 4, 2)
+				state = self.AI.get_next_state()
+				self.set_state(state)
 				self.print_table()
 			else:
 				self.update_possible_moves(piece)

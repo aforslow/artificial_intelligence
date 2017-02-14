@@ -1,6 +1,7 @@
 #!usr/bin/env python
 
 import sys
+import copy
 from ai import AI
 
 class Game():

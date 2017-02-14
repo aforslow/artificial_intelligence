@@ -46,11 +46,11 @@ maxX = 20
 minY = 5
 maxY = 20
 nbrOfValues = 200
-iterations = 5000*10
+iterations = 5000*2
 
 m = -1
 k = 0
-alpha = 0.0005
+alpha = 0.0005*4
 
 vec = createRandomValues(minX, maxX, minY, maxY, nbrOfValues)
 x = vec[0]

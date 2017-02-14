@@ -1,0 +1,19 @@
+TODO
+
+1. Create playable game, with state transitions
+	* Create ASCII grid
+	* Fix communication GRID/PLAYER (i.e. letters->coords)
+	* Fix logic for legal moves
+		- Look up game rules
+		- No legal moves outside of grid
+		- Only legal moves when encapsulating other player's bricks
+	* Save legal moves/states; prohibit all other moves
+	* Communicate legal moves to player
+	* Create point system for states
+	* Provide option menu (i.e. player start/AI starts, yield, etc.)
+	* Create visualization of game state
+
+2. Create minimax algorithm with alpha-beta pruning
+	* Create algorithm
+	* Introduce time limit to algorithm
+	* Create bookkeeping of time used for reasoning

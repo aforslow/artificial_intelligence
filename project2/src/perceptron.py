@@ -1,4 +1,4 @@
-#usr/bin/env python
+#!/usr/bin/env python
 from reader_function import Reader
 
 class Perceptron():

@@ -23,7 +23,10 @@ class Perceptron():
 				idx += 1
 			miss_rate = n_misses / len(y)
 
-		print "Miss rate", miss_rate, n_misses, len(y)
+		print "Miss rate:", miss_rate
+		print "Number of misses last training:", n_misses
+		print "Training set size:", len(y)
+		print ""
 
 	def get_params(self):
 		return self.w
@@ -49,6 +52,8 @@ class Perceptron():
 		self.test(self.y, self.x)
 
 	def testset_test(self):
+		print "\nTest set results:"
+		print "-----------------------"
 		self.test(y[self.training_size:], x[self.training_size:])
 
 	def test(self, y, dicts):
@@ -73,9 +78,8 @@ if __name__ == "__main__":
 	r.libsvm_read_file("../test/test1.txt")
 	y, x = r.get_randomized_data()
 	p = Perceptron(x, y)
-	p.train(10)
-	print "params: "
-	print p.get_params()
+	p.train(20)
+	print "Parameters (w0, w1, w2):", p.get_params()
 	p.testset_test()
 
 

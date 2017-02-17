@@ -7,15 +7,18 @@ class Perceptron():
 		self.x = x
 		self.y = y
 		self.w = [0] * 3 #We assume 2 features (as in training set)
+		self.training_size = len(self.y)
 
-	def train(self):
+	def train(self, size=0):
+		if size > 0:
+			self.training_size = size
 		print "Training..."
 		print ""
 		miss_rate = 1.0
 		while (miss_rate > 0.1):
 			idx = 0
 			n_misses = 0.0
-			for dictionary in self.x:
+			for dictionary in self.x[:self.training_size]:
 				n_misses += self.simple_update(dictionary, self.y[idx])
 				idx += 1
 			miss_rate = n_misses / len(y)
@@ -45,6 +48,9 @@ class Perceptron():
 	def simple_test(self):
 		self.test(self.y, self.x)
 
+	def testset_test(self):
+		self.test(y[self.training_size:], x[self.training_size:])
+
 	def test(self, y, dicts):
 		idx = 0
 		classification_list = []
@@ -52,19 +58,25 @@ class Perceptron():
 			classification_list.append(self.classify(dictionary))
 		
 		print "Classifications: "
-		print classification_list,
+		print classification_list
 		print "Actual classes: "
 		print y
+		print "Accuracy: ", 
+		n_misses = 0.0
+		for i in range(len(y)):
+			if abs(classification_list[i] - y[i]) != 0.0:
+				n_misses += 1.0
+		print 1.0 - (n_misses / len(y))
 
 if __name__ == "__main__":
 	r = Reader()
 	r.libsvm_read_file("../test/test1.txt")
 	y, x = r.get_randomized_data()
 	p = Perceptron(x, y)
-	p.train()
+	p.train(10)
 	print "params: "
 	print p.get_params()
-	p.simple_test()
+	p.testset_test()
 
 
 

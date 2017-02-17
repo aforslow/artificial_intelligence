@@ -8,6 +8,7 @@ class Perceptron():
 		self.y = y
 		self.w = [0] * 3 #We assume 2 features (as in training set)
 		self.training_size = len(self.y)
+		print x
 
 	def train(self, size=0):
 		if size > 0:
@@ -76,6 +77,7 @@ class Perceptron():
 if __name__ == "__main__":
 	r = Reader()
 	r.libsvm_read_file("../test/test1.txt")
+	r.scale_data()
 	y, x = r.get_randomized_data()
 	p = Perceptron(x, y)
 	p.train(20)

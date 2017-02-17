@@ -1,4 +1,4 @@
-#usr/bin/env python
+#!/usr/bin/env python
 import sys
 sys.path.append('/Users/andreas/Downloads/libsvm-3.22/python')
 from svmutil import *

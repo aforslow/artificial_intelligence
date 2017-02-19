@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-import sys
-sys.path.append('../libsvm-3.22/python')
-from svmutil import *
 import random
 
 class Reader():
@@ -11,6 +8,24 @@ class Reader():
 
 	def libsvm_read_file(self, filename):
 		self.y, self.x = svm_read_problem(filename)
+		return self.y, self.x
+
+	def decode_file(self, filename):
+		self.y = []
+		self.x = []
+		with open(filename, 'r') as file:
+			for line in file:
+				words = line.split()
+				self.y.append(float(words[0]))
+				new_point = {}
+				for point in words[1:]:
+					tuple_point = point.split(':')
+					new_point[int(tuple_point[0])] = float(tuple_point[1])
+				self.x.append(new_point)
+
+		print self.y
+		print self.x
+		print "End of first print"
 		return self.y, self.x
 
 	def encode_file(self, source, dest, idx):
@@ -65,8 +80,10 @@ if __name__ == "__main__":
 		file.write("")
 	r.encode_file("../test/salammbo_a_fr.plot.txt", "../test/test1.txt", "0")
 	r.encode_file("../test/salammbo_a_en.plot.txt", "../test/test1.txt", "1")
-	y, x = r.libsvm_read_file("../test/test1.txt")
+	y, x = r.decode_file("../test/test1.txt")
+	# y, x = r.libsvm_read_file("../test/test1.txt")
 	print x
+	print y
 	print ""
 	z = r.scale_data()
 	z1 = z[0]

@@ -76,7 +76,7 @@ class Perceptron():
 
 if __name__ == "__main__":
 	r = Reader()
-	r.libsvm_read_file("../test/test1.txt")
+	r.decode_file("../test/test1.txt")
 	r.scale_data()
 	y, x = r.get_randomized_data()
 	p = Perceptron(x, y)

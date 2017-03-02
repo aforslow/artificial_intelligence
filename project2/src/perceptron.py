@@ -15,18 +15,28 @@ class Perceptron():
 			self.training_size = size
 		print "Training..."
 		print ""
-		miss_rate = 1.0
-		while (miss_rate > 0.1):
+
+		#Stop when the number of misclassified examples = 0
+		#for the training set
+		n_misses = self.training_size
+		miss_rate = 1
+		miss_rate2 = miss_rate
+		idx2 = 0
+		while (n_misses > 0): #Stop condition
 			idx = 0
+			idx2 += 1
 			n_misses = 0.0
 			for dictionary in self.x[:self.training_size]:
 				n_misses += self.simple_update(dictionary, self.y[idx])
 				idx += 1
-			miss_rate = n_misses / len(y)
+			miss_rate = n_misses / self.training_size
+			if (miss_rate < (miss_rate2 - 0.01)):
+				miss_rate2 = miss_rate
+				print "Imroved miss rate: ", miss_rate
 
 		print "Miss rate:", miss_rate
 		print "Number of misses last training:", n_misses
-		print "Training set size:", len(y)
+		print "Training set size:", self.training_size
 		print ""
 
 	def get_params(self):
@@ -80,7 +90,7 @@ if __name__ == "__main__":
 	r.scale_data()
 	y, x = r.get_randomized_data()
 	p = Perceptron(x, y)
-	p.train(20)
+	p.train(25)
 	print "Parameters (w0, w1, w2):", p.get_params()
 	p.testset_test()
 

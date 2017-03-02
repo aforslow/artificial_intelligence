@@ -44,17 +44,18 @@ class Reader():
 
 	def scale_data(self):
 		#Get max & min vals
-		max_vals = []
-		min_vals = []
+		coordinate_vals = {}
+		for key in self.x[0]:
+			coordinate_vals[key] = []
 		for list_obj in self.x:
-			max_vals.append(max(list_obj.values()))
-			min_vals.append(min(list_obj.values()))
-		min_val = min(min_vals)
-		max_val = max(max_vals)
+			for key in list_obj.keys():
+				coordinate_vals[key].append(list_obj[key])
 
 		#Scale the data
 		for list_obj in self.x:
 			for key in list_obj.keys():
+				min_val = min(coordinate_vals[key])
+				max_val = max(coordinate_vals[key])
 				list_obj[key] = (list_obj[key] - min_val) / (max_val - min_val)
 
 		return self.x

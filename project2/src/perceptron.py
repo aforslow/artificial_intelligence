@@ -91,7 +91,7 @@ class Perceptron():
 	#Logistic definitions
 	def sigmoid(self, w, x):
 		nom = 1
-		dom = 1 + math.exp(w[0]-w[1]*x[1] - w[2]*x[2])
+		dom = 1 + math.exp(-w[0]-w[1]*x[1] - w[2]*x[2])
 		return nom/dom
 
 	def logRegression(self, x, y, w, alpha):
@@ -121,9 +121,9 @@ if __name__ == "__main__":
 	r.scale_data()
 	y, x = r.get_randomized_data()
 	p = Perceptron(x, y)
-	p.train(25)
-	print "Parameters (w0, w1, w2):", p.get_params()
-	p.testset_test()
+	# p.train(25)
+	# print "Parameters (w0, w1, w2):", p.get_params()
+	# p.testset_test()
 
 	#logistic regression
 	x1 = x
@@ -134,15 +134,15 @@ if __name__ == "__main__":
 	w1.append(2)
 	w1.append(1)
 
-	epsilon = 0.00001
-	alpha = 0.001
+	epsilon = 0.03
+	alpha = 0.1
 
 	normValue = 1;
 	while normValue > epsilon:
+		normValue = 0
 		for j in range(0, len(y1)):
-			normValue = p.logRegression(x1[j], y1[j], w1, alpha)
-			if normValue < epsilon:
-				break
+			normValue += p.logRegression(x1[j], y1[j], w1, alpha)
+		normValue /= len(y1)
 
 
 	#printing values

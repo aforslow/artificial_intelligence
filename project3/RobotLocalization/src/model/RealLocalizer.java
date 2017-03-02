@@ -4,8 +4,12 @@ import control.EstimatorInterface;
 import java.util.Random;
 public class RealLocalizer implements EstimatorInterface {
 		
-	private int rows, cols, head, x, y, direction;
+	private int rows, cols, head, x, y, direction, nbrStates;
+	private State[] observations;
+	private double[][] transMatrix;
 	public static Random rand = new Random();
+	private int observationCounter = 0;
+	
 
 
 
@@ -13,10 +17,16 @@ public class RealLocalizer implements EstimatorInterface {
 		this.rows = rows;
 		this.cols = cols;
 		this.head = head;
-
-		x = rand.randInt(rows);
-		y = rand.randInt(cols);
-		direction = rand.randInt(head) + 1;
+		nbrStates = rows*cols*head;
+		x = rand.nextInt(rows);
+		y = rand.nextInt(cols);
+		direction = rand.nextInt(head) + 1;
+		
+		observations = new State[nbrStates];
+		transMatrix = new double[nbrStates][nbrStates];
+		
+		int[] temp = getCurrentReading();
+		observations[observationCounter++] = new State(temp[1], temp[0], direction);
 		
 	}	
 	
@@ -53,83 +63,57 @@ public class RealLocalizer implements EstimatorInterface {
 	/*
 		First we generate which area, that is if it's the true
 		location, the inner circle, outer circle or a faulty reading.
-		After that we generate a number to determain whih square in that
+		After that we generate a number to determine which square in that
 		circle we wanna get. Here is what it would look like
 
 		1  2  3			1  2  3  4  5
 		4  x  5			6  x  x  x  7
-		6  7  8 		8  x  O  x  9
+		6  7  8 		8  x  X  x  9
 						10 x  x  x  11
 						12 13 14 15 16
 	*/
 
-	private int[][] inner = {
-		{-1, -1},
-		{0, -1},
-		{1, -1},
-		{-1, 0},
-		{1, 0},
-		{-1, 1},
-		{0, 1},
-		{1, 1}
-	}
-	private int[][] outer = {
-		{-2, -2},
-		{-1, -2},
-		{0, -2},
-		{1, -2},
-		{2, -2},
-		{-2, -1},
-		{2, -1},
-		{-2, 0},
-		{2, 0},
-		{-2, 1},
-		{2, 1},
-		{-2, 2},
-		{-1, 2},
-		{0, 2},
-		{1, 2},
-		{2, 2},
-	}
+	
 	public int[] getCurrentReading() {
-		int[] ret = null;
+		int[] ret = new int[2];
+		int rX;
+		int rY;
 		int area = rand.nextInt(10) + 1;
 		if (area == 1) {
-			ret = {x, y};
+			rX = x;
+			rY = y;
 		} else if (1 < area && area < 6) {
 			int[] temp = translateNbrCircle(true);
 			rX = x - temp[1];
 			rY = y - temp[0];
-			ret = {rX, rY};
-			if (isInside(rX, rY)) {
-				return {-1, -1};
+			ret = new int[]{rX, rY};
+			if (!UtilityModel.isInside(rX, rY, rows, cols)) {
+				return null;
 			}
 		} else if (6 <= area && area < 10) {
 			int[] temp = translateNbrCircle(false);
 			rX = x - temp[1];
 			rY = y - temp[0];
-			ret = {rX, rY};
-			if (isInside(rX, rY)) {
-				return {-1, -1};
+			if (!UtilityModel.isInside(rX, rY, rows, cols)) {
+				return null;
 			}
 		} else {
-			ret = {-1, -1};
+			rX = -1;
+			rY = -1;
+			
 		}
+		ret[0] = rX;
+		ret[1] = rY;
+		
 		return ret;
 	}
 
-	private boolean isInside(int x, int y) {
-		if (x < 0 || x >= cols || y < 0 || y >= rows) {
-			return false;
-		}
-		return true;
-	}
-
-	private int[] translateNbrCircle(boolean innerCircle, int nbr) {
+	
+	private int[] translateNbrCircle(boolean innerCircle) {
 		if (innerCircle) {
-			return inner[rand.nextInt(8)];
+			return UtilityModel.inner[rand.nextInt(8)];
 		} else {
-			return outer[rand.nextInt(16)];
+			return UtilityModel.outer[rand.nextInt(16)];
 		}
 	}
 
@@ -139,6 +123,40 @@ public class RealLocalizer implements EstimatorInterface {
 	}
 	
 	public void update() {
+		int change = rand.nextInt(10);
+		if (change <= 6) {
+			while (!UtilityModel.validDirection(x, y, rows, cols, direction)) {
+				direction = rand.nextInt(head) + 1;
+			}
+		} else {
+			do {
+				int tempDirection = rand.nextInt(head) + 1;
+				while (tempDirection == direction) {
+					tempDirection = rand.nextInt(head) + 1;
+				}
+				direction = tempDirection;
+			
+			} while (!UtilityModel.validDirection(x, y, rows, cols, direction));
+		}
+		
+		switch (direction) {
+		case UtilityModel.LEFT:
+			x--;
+			break;
+		case UtilityModel.UP:
+			y--;
+			break;
+		case UtilityModel.RIGHT:
+			x++;
+			break;
+		case UtilityModel.DOWN:
+			y++;
+			break;
+		}
+		
+		//new state
+		int[] temp = getCurrentReading();
+		observations[observationCounter++] = new State(temp[1], temp[0], direction);
 		
 	}
 	

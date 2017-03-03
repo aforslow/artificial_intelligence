@@ -14,7 +14,7 @@ public class ObservationMatrix {
 	}
 
 	private void createObservationMatrix() {
-		observationMatrix = new double[rows * cols * nDirections][rows * cols * nDirections];
+		observationMatrix = new double[rows * cols * nDirections + 1][rows * cols * nDirections];
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < cols; col++) {
 				for (int dir = 0; dir < nDirections; dir++) {
@@ -38,6 +38,28 @@ public class ObservationMatrix {
 		for (State s : outerBox) {
 			setObserveProb(observedState, s, 0.025);
 		}
+		setNothingProb();
+	}
+	
+	private void setNothingProb() {
+		for (int row=0; row < rows; row++) {
+			for (int col=0; col < cols; col++) {
+				for (int dir=0; dir < nDirections; dir++) {
+					State s = new State(row, col, dir);
+					observationMatrix[nDirections][getStateIdx(s)] = 1.0 - 0.1 - n_Ls(s)*0.05 - n_Ls2(s)*0.025;
+				}
+			}
+		}
+	}
+	
+	//Returns number of surrounding first ring boxes for state s
+	private double n_Ls(State s) {
+		
+	}
+	
+	//Returns number of surrounding second ring boxes for state s
+	private double n_Ls2(State s) {
+		
 	}
 
 	private LinkedList<State> sameBox(State observedState) {

@@ -22,11 +22,11 @@ public class RealLocalizer implements EstimatorInterface {
 		y = rand.nextInt(cols);
 		direction = rand.nextInt(head) + 1;
 		
-		observations = new State[nbrStates];
-		transMatrix = new double[nbrStates][nbrStates];
-		
-		int[] temp = getCurrentReading();
-		observations[observationCounter++] = new State(temp[1], temp[0], direction);
+//		observations = new State[nbrStates];
+//		transMatrix = new double[nbrStates][nbrStates];
+//		
+//		int[] temp = getCurrentReading();
+//		observations[observationCounter++] = new State(temp[1], temp[0], direction);
 		
 	}	
 	
@@ -154,10 +154,10 @@ public class RealLocalizer implements EstimatorInterface {
 			break;
 		}
 		
-		//new state
-		int[] temp = getCurrentReading();
-		observations[observationCounter++] = new State(temp[1], temp[0], direction);
-		
+//		//new state
+//		int[] temp = getCurrentReading();
+//		observations[observationCounter++] = new State(temp[1], temp[0], direction);
+//		
 	}
 	
 	

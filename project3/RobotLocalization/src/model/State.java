@@ -22,4 +22,8 @@ public class State {
 	public int getDirection() {
 		return direction;
 	}
+	
+	public boolean isNothing() {
+		return row == -1 && col == -1;
+	}
 }

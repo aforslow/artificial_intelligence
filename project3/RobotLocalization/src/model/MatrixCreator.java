@@ -6,16 +6,38 @@ public class MatrixCreator {
 	private int rows, cols, nDirections;
 	private double[][] transitionMatrix;
 	private double[] stateProb;
+	private State[] stateMap;
+	
+	private int nbrStates;
 
 	public MatrixCreator(int rows, int cols, int nDirections) {
 		this.rows = rows;
 		this.cols = cols;
 		this.nDirections = nDirections;
+		nbrStates = rows*cols*nDirections;
 		createTransitionMatrix();
 		createStateProbMatrix();
+		createStateMapMatrix();
 //		createObservationMatrix();
 	}
-
+	
+	private void createStateMapMatrix() {
+		stateMap = new State[nbrStates];
+		int counter = 0;
+		for (int i = 0; i<rows; i++) {
+			for (int j = 0; j<cols; j++) {
+				for (int n = 1; n<5; n++) {
+					State temp = new State(i, j, n);
+					stateMap[counter] = temp;
+					counter++;
+				}
+			}
+		}
+		
+		
+		
+	}
+	
 	private void createTransitionMatrix() {
 		transitionMatrix = new double[rows*cols*nDirections][rows*cols*nDirections];
 		for (int state = 0; state < rows * cols * nDirections; state++) {
@@ -66,6 +88,148 @@ public class MatrixCreator {
 			}
 		}
 		return states;
+	}
+	
+	public double[] getObsMatrix(State obState) {
+		double[] obs = new double[nbrStates];
+		
+		obs = createObsFromObservation(obs, obState);
+		return obs;
+	}
+	
+	private double[] createObsFromObservation(double[] obs, State obState) {
+		
+		if (!obState.isNothing()) {
+			for (int i = 0; i<nbrStates; i++) {
+				double probSum = 0.1;
+				probSum += 0.05*checkNeighboursOutside(stateMap[i], 1);
+				probSum += 0.025*checkNeighboursOutside(stateMap[i], 2);
+				obs[i] = probSum;
+			}
+		} else {
+			for (int i = 0; i<nbrStates; i++) {
+				if (obState == null) {
+					System.out.println("banan");
+				}
+				if (obState.getRow() == stateMap[i].getRow() && obState.getCol() == stateMap[i].getCol()) {
+					obs[i] = 0.1;
+				} else if (closeBy(obState, i, 1)) {
+					obs[i] = 0.05;
+				} else if (closeBy(obState, i, 2)) {
+					obs[i] = 0.025;
+				} else {
+					obs[i] = 0.0;
+				}
+			}
+		}
+		
+		return obs;
+	}
+	
+	private boolean closeBy(State obState, int index, int step) {
+		int row = obState.getRow();
+		int col = obState.getCol();
+		
+		int rV = stateMap[index].getRow();
+		int cV = stateMap[index].getCol();
+		for (int i = row - step; i<=row+step; i++) {
+			for (int j = col - step; j<=col+step; j++) {
+				if (i == row && j == col) {
+					continue;
+				}
+				if (rV == row && col == cV) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private int checkNeighboursOutside(State state, int size) {
+		int neighbours = 0;
+		
+		int row = state.getRow();
+		int col = state.getCol();
+		
+		for (int i = row - size; i<= row + size; i++) {
+			for (int j = col - size; j<= col + size; j++) {
+				if (Math.abs(row - i) == size || Math.abs(col - j) == size) {
+					if (outsideMatrix(i, j)) {
+						neighbours++;
+					}
+				}
+			}
+		}
+		
+		
+		return neighbours;
+	}
+	
+	public State localizationOfRobot(int row, int col) {
+		State temp = new State(row, col, 1);
+		int index = hiddenMM(temp);
+		return stateMap[index];
+	}
+	
+	private int hiddenMM(State sensor) {
+		double temp[] = new double[nbrStates];
+		double alpha = fixTempAndAlpha(getObsMatrix(sensor), temp);
+//		System.out.println(alpha);
+		return guessState(temp, 1/ alpha);
+	}
+	
+	private double fixTempAndAlpha(double[] obs, double[] temp) {
+//		for (int i = 0; i < nbrStates; i++) {
+//			System.out.println(obs[i]);
+//		}
+		int counterS = 0;
+
+		double alpha = 0;
+		for (int r = 0; r < nbrStates; r++) {
+			temp[r] = 0;
+			for (int i = 0; i<nbrStates; i++) {
+				temp[r] += transitionMatrix[i][r] * stateProb[i] * obs[i];
+			}
+			if (temp[r] != 0){
+				System.out.println("banan   " + temp[r]);
+			}
+			alpha += temp[r];
+
+//			System.out.println(temp[r]);
+		
+		}
+		System.out.println("Gurka   " + alpha + "-----------------------------------");
+		System.out.println("Gurka2   " + 1/alpha);
+		for (int i = 0; i<nbrStates; i++) {
+//			if (stateProb[i] == i || transitionMatrix[i][2] == 0) {
+//				counterS++;
+//			}
+		}
+		if (counterS == nbrStates*nbrStates) {
+			System.out.println("Banan");
+		}
+		return alpha;
+	}
+	
+	private int guessState(double[] temp, double alpha) {
+		int guess = -1;
+		double max = Integer.MIN_VALUE;
+		System.out.println("Morot   " + alpha);
+		for (int i = 0; i<nbrStates; i++) {
+			stateProb[i] = temp[i]*alpha;
+//			System.out.println(temp[i] + " temp  " + alpha);
+			if (temp[i] > max) {
+				guess = i;
+				max = temp[i];
+			}
+		}
+//		System.out.println("---------------------------");
+		
+		return guess;
+	}
+	
+	private boolean outsideMatrix(int row, int col) {
+		return row < 0 || row >= rows || col < 0 || col >= cols;
 	}
 	
 	private State getNextState(int row, int col, int direction) {

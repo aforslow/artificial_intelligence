@@ -10,6 +10,7 @@ public class RealLocalizer implements EstimatorInterface {
 	public static Random rand = new Random();
 	private int observationCounter = 0;
 	
+	MatrixCreator c;
 
 
 
@@ -21,6 +22,7 @@ public class RealLocalizer implements EstimatorInterface {
 		x = rand.nextInt(rows);
 		y = rand.nextInt(cols);
 		direction = rand.nextInt(head) + 1;
+		c = new MatrixCreator(rows, cols, head);
 		
 //		observations = new State[nbrStates];
 //		transMatrix = new double[nbrStates][nbrStates];
@@ -42,12 +44,34 @@ public class RealLocalizer implements EstimatorInterface {
 		return head;
 	}
 	
-	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {
-		return 0.0;
+	public double getTProb( int x, int y, int h, int nX, int nY, int nH) {	
+		//Translating the direction so it suits our structure
+		h = 3 - (h + 3)%4;
+		nH = 3 - (nH + 3)%4;
+		
+		return c.getTProb(y, x, h%4, nY, nX, (nH)%4);
 	}
 
 	public double getOrXY( int rX, int rY, int x, int y) {
-		return 0.1;
+		//converting coordinates to suit our structure
+//		x = x - 2;
+//		y = y - 2;
+		
+		int tempCol = Math.abs(rX - x);
+		int tempRow = Math.abs(rY - y);
+		if (2 == tempRow  && 2 >= tempCol) {
+			return 0.025;
+		} else if (tempRow <= 1 && tempCol == 2) {
+			return 0.025;
+		} else if (tempRow == 1 && tempCol <= 1) {
+			return 0.05;
+		} else if (tempRow == 0 && tempCol == 1) {
+			return 0.05;
+		} else if (tempCol + tempRow == 0) {
+			return 0.1;
+		} else {
+			return 0;
+		}
 	}
 
 
@@ -118,8 +142,7 @@ public class RealLocalizer implements EstimatorInterface {
 	}
 
 	public double getCurrentProb( int x, int y) {
-		double ret = 0.0;
-		return ret;
+		return c.getStateProb(y, x);
 	}
 	
 	public void update() {

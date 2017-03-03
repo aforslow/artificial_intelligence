@@ -5,12 +5,14 @@ import java.util.LinkedList;
 public class MatrixCreator {
 	private int rows, cols, nDirections;
 	private double[][] transitionMatrix;
+	private double[] stateProb;
 
 	public MatrixCreator(int rows, int cols, int nDirections) {
 		this.rows = rows;
 		this.cols = cols;
 		this.nDirections = nDirections;
 		createTransitionMatrix();
+		createStateProbMatrix();
 //		createObservationMatrix();
 	}
 
@@ -24,6 +26,13 @@ public class MatrixCreator {
 					}
 				}
 			}
+		}
+	}
+	
+	private void createStateProbMatrix() {
+		stateProb = new double[rows*cols*nDirections];
+		for (int i = 0; i < rows*cols*nDirections; i++) {
+			stateProb[i] = 1.0/(rows*cols*nDirections);
 		}
 	}
 	
@@ -104,8 +113,25 @@ public class MatrixCreator {
 		return col*nDirections + dir + row*cols*nDirections;
 	}
 	
+	public double getTProb(int row, int col, int h, int rRow, int rCol, int rH) {
+		int currStateIdx = getStateIdx(new State(row, col, h));
+
+		int nextStateIdx = getStateIdx(new State(rRow, rCol, rH));
+//		return transitionMatrix[0][7];
+		System.out.println(row + " " + col + " " + h + "   " + rRow + " " + rCol + " " + rH + "    " + transitionMatrix[row*rows+col*cols + h][rRow*rows+rCol*cols + rH]);
+		return transitionMatrix[currStateIdx][nextStateIdx];
+	}
+	
+	public double getStateProb(int row, int col) {
+		double sum = 0;
+		for (int i = 0; i < 4; i++) {
+			sum += stateProb[rows*row + cols*col + i];
+		}
+		return sum;
+	}
+	
 	public static void main(String[] args) {
-		MatrixCreator mc = new MatrixCreator(5, 5, 4);
+		MatrixCreator mc = new MatrixCreator(3, 3, 4);
 		mc.printTransitionMatrix();
 	}
 }

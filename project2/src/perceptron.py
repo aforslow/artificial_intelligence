@@ -121,9 +121,9 @@ if __name__ == "__main__":
 	r.scale_data()
 	y, x = r.get_randomized_data()
 	p = Perceptron(x, y)
-	# p.train(25)
-	# print "Parameters (w0, w1, w2):", p.get_params()
-	# p.testset_test()
+	p.train(25)
+	print "Parameters (w0, w1, w2):", p.get_params()
+	p.testset_test()
 
 	#logistic regression
 	x1 = x

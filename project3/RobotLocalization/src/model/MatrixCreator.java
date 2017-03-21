@@ -270,7 +270,7 @@ public class MatrixCreator {
 				for (int n = 0; n<nDirections; n++) {
 					int index = i*cols*4 + j*4 + n;
 					stateProb[index] = temp[index]*alpha;
-					sum += temp[i];
+					sum += temp[index];
 				}
 				if (sum > max) {
 					guess = i*cols*4 + j*4;

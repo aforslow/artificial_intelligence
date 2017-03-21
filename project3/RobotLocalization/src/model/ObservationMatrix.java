@@ -12,6 +12,10 @@ public class ObservationMatrix {
 		this.nDirections = nDirections;
 		createObservationMatrix();
 	}
+	
+	public double[][] getObservationMatrix() {
+		return observationMatrix;
+	}
 
 	private void createObservationMatrix() {
 		observationMatrix = new double[rows * cols * nDirections + 1][rows * cols * nDirections];
@@ -54,12 +58,34 @@ public class ObservationMatrix {
 	
 	//Returns number of surrounding first ring boxes for state s
 	private double n_Ls(State s) {
-		
+		int n_Ls = 0;
+		for (int row=-1; row < 2; row++) {
+			for (int col=-1; col < 2; col++) {
+				if (row == 0 && col == 0) {
+					continue;
+				}
+				if (stateOk(new State(s.getRow() + row, s.getCol() + col, s.getDirection()))) {
+					n_Ls++;
+				}
+			}
+		}
+		return n_Ls;
 	}
 	
 	//Returns number of surrounding second ring boxes for state s
 	private double n_Ls2(State s) {
-		
+		int n_Ls2 = 0;
+		for (int row=-2; row < 3; row++) {
+			for (int col=-2; col < 3; col++) {
+				if ((row >= -1 && row < 2) && (col >= -1 && col < 2)) {
+					continue;
+				}
+				if (stateOk(new State(s.getRow() + row, s.getCol() + col, s.getDirection()))) {
+					n_Ls2++;
+				}
+			}
+		}
+		return n_Ls2;
 	}
 
 	private LinkedList<State> sameBox(State observedState) {

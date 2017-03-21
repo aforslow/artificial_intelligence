@@ -18,9 +18,11 @@ public class MatrixCreator {
 		createTransitionMatrix();
 		createStateProbMatrix();
 		createStateMapMatrix();
-//		createObservationMatrix();
 	}
-	
+
+	/*
+	 * Creates a matrix that maps a state to a point
+	 */
 	private void createStateMapMatrix() {
 		stateMap = new State[nbrStates];
 		int counter = 0;
@@ -33,11 +35,11 @@ public class MatrixCreator {
 				}
 			}
 		}
-		
-		
-		
 	}
 	
+	/*
+	 * Creates the transition matrix
+	 */
 	private void createTransitionMatrix() {
 		transitionMatrix = new double[rows*cols*nDirections][rows*cols*nDirections];
 		for (int state = 0; state < rows * cols * nDirections; state++) {
@@ -51,6 +53,9 @@ public class MatrixCreator {
 		}
 	}
 	
+	/*
+	 * Creates a array with the probability for each state
+	 */
 	private void createStateProbMatrix() {
 		stateProb = new double[rows*cols*nDirections];
 		for (int i = 0; i < rows*cols*nDirections; i++) {
@@ -58,6 +63,9 @@ public class MatrixCreator {
 		}
 	}
 	
+	/*
+	 * Used for debugging
+	 */
 	public void printTransitionMatrix() {
 		for (int row=0; row < rows*cols*nDirections; row++) {
 			for (int col=0; col < rows*cols*nDirections; col++) {
@@ -66,6 +74,10 @@ public class MatrixCreator {
 			System.out.println();
 		}
 	}
+	
+	/*
+	 * Help method for the transitionmatrix method
+	 */
 	
 	private void distributeProbability(int row, int col, int direction) {
 		State currState = new State(row, col, direction);
@@ -77,6 +89,10 @@ public class MatrixCreator {
 			setTransitionProb(currState, s, pointDistribution / nGoodTransitions);
 		}
 	}
+	
+	/*
+	 * Help method for the transitionmatrix method
+	 */
 	
 	private LinkedList<State> getAltStates(State currState) {
 		LinkedList<State> states = new LinkedList<State>();
@@ -90,6 +106,10 @@ public class MatrixCreator {
 		return states;
 	}
 	
+	/*
+	 * Returns the observation matrix for a observed point from the sensor
+	 */
+	
 	public double[] getObsMatrix(State obState) {
 		double[] obs = new double[nbrStates];
 		
@@ -97,20 +117,29 @@ public class MatrixCreator {
 		return obs;
 	}
 	
+	/*
+	 * Private help method to create the array for the observation vector
+	 */
 	private double[] createObsFromObservation(double[] obs, State obState) {
-		
-		if (!obState.isNothing()) {
+		if (obState.isNothing()) {
 			for (int i = 0; i<nbrStates; i++) {
+				//I think this is wrong, going by the formula...
+				//Andreas attempt at code fix
+				double probSum = 1.0 - 0.1;
+				probSum -= 0.05*checkNearbyNeighbours(stateMap[i], 1);
+				probSum -= 0.025*checkNearbyNeighbours(stateMap[i], 2);
+				obs[i] = probSum;
+				
+				/*
 				double probSum = 0.1;
 				probSum += 0.05*checkNeighboursOutside(stateMap[i], 1);
 				probSum += 0.025*checkNeighboursOutside(stateMap[i], 2);
 				obs[i] = probSum;
+				*/
 			}
 		} else {
 			for (int i = 0; i<nbrStates; i++) {
-				if (obState == null) {
-					System.out.println("banan");
-				}
+
 				if (obState.getRow() == stateMap[i].getRow() && obState.getCol() == stateMap[i].getCol()) {
 					obs[i] = 0.1;
 				} else if (closeBy(obState, i, 1)) {
@@ -122,10 +151,12 @@ public class MatrixCreator {
 				}
 			}
 		}
-		
 		return obs;
 	}
 	
+	/*
+	 * Private helpmethod to see if a state index is number "step" away from obState
+	 */
 	private boolean closeBy(State obState, int index, int step) {
 		int row = obState.getRow();
 		int col = obState.getCol();
@@ -137,7 +168,7 @@ public class MatrixCreator {
 				if (i == row && j == col) {
 					continue;
 				}
-				if (rV == row && col == cV) {
+				if (i == rV && j == cV) {
 					return true;
 				}
 			}
@@ -145,6 +176,29 @@ public class MatrixCreator {
 		return false;
 	}
 	
+	private int checkNearbyNeighbours(State state, int size) {
+		int neighbours = 0;
+		
+		int row = state.getRow();
+		int col = state.getCol();
+		
+		for (int i = row - size; i <= row + size; i++) {
+			for (int j = col - size; j <= col + size; j++) {
+				if (Math.abs(row - i) == size || Math.abs(col - j) == size) {
+					if (!outsideMatrix(i, j)) {
+						neighbours++;
+					}
+				}
+			}
+		}
+		return neighbours;
+	}
+	
+	/*
+	 * Private helpmethod to see how many available nodes from a sensor output 
+	 * are outside the board. Used to calculate the probability when you get
+	 * a faulty state from the sensor
+	 */
 	private int checkNeighboursOutside(State state, int size) {
 		int neighbours = 0;
 		
@@ -165,73 +219,80 @@ public class MatrixCreator {
 		return neighbours;
 	}
 	
+	/*
+	 * Used by the RealLocalizerclass after each sensoroutput.
+	 * It uses the sensor output as an input and use the filtering on that point
+	 */
 	public State localizationOfRobot(int row, int col) {
 		State temp = new State(row, col, 1);
 		int index = hiddenMM(temp);
 		return stateMap[index];
 	}
 	
+	/*
+	 * Help method to create the new f in the matrix formula from the book.
+	 * After we've created our new f we return the most likely point the robot are at.
+	 */
 	private int hiddenMM(State sensor) {
 		double temp[] = new double[nbrStates];
 		double alpha = fixTempAndAlpha(getObsMatrix(sensor), temp);
-//		System.out.println(alpha);
 		return guessState(temp, 1/ alpha);
 	}
 	
+	/*
+	 * help method to do the formula from the book. calculates the "temp" which 
+	 * is the combined matrix from the T, S and O matrices and alpha.
+	 */
 	private double fixTempAndAlpha(double[] obs, double[] temp) {
-//		for (int i = 0; i < nbrStates; i++) {
-//			System.out.println(obs[i]);
-//		}
-		int counterS = 0;
-
 		double alpha = 0;
 		for (int r = 0; r < nbrStates; r++) {
 			temp[r] = 0;
 			for (int i = 0; i<nbrStates; i++) {
-				temp[r] += transitionMatrix[i][r] * stateProb[i] * obs[i];
-			}
-			if (temp[r] != 0){
-				System.out.println("banan   " + temp[r]);
+				temp[r] += transitionMatrix[i][r] * stateProb[i] * obs[r];
 			}
 			alpha += temp[r];
+		}
 
-//			System.out.println(temp[r]);
-		
-		}
-		System.out.println("Gurka   " + alpha + "-----------------------------------");
-		System.out.println("Gurka2   " + 1/alpha);
-		for (int i = 0; i<nbrStates; i++) {
-//			if (stateProb[i] == i || transitionMatrix[i][2] == 0) {
-//				counterS++;
-//			}
-		}
-		if (counterS == nbrStates*nbrStates) {
-			System.out.println("Banan");
-		}
 		return alpha;
 	}
 	
+	/*
+	 * Helpmethod to calculate the new f vector based on the tempmatrix and our alpha from the 
+	 * fixTempAndAlpha method. returns the index for the most likely point.
+	 *  (Easy to change the most likely state if it's interested)
+	 */
 	private int guessState(double[] temp, double alpha) {
 		int guess = -1;
 		double max = Integer.MIN_VALUE;
-		System.out.println("Morot   " + alpha);
-		for (int i = 0; i<nbrStates; i++) {
-			stateProb[i] = temp[i]*alpha;
-//			System.out.println(temp[i] + " temp  " + alpha);
-			if (temp[i] > max) {
-				guess = i;
-				max = temp[i];
+		for (int i = 0; i<rows; i++) {
+			for (int j = 0; j<cols; j++) {
+				double sum = 0;
+				for (int n = 0; n<nDirections; n++) {
+					int index = i*cols*4 + j*4 + n;
+					stateProb[index] = temp[index]*alpha;
+					sum += temp[i];
+				}
+				if (sum > max) {
+					guess = i*cols*4 + j*4;
+					max = sum;
+				}
 			}
+
 		}
-//		System.out.println("---------------------------");
 		
 		return guess;
 	}
 	
+	/*
+	 * Help method to check if the point (row, col) is outside the board/matrix
+	 */
 	private boolean outsideMatrix(int row, int col) {
 		return row < 0 || row >= rows || col < 0 || col >= cols;
 	}
 	
+	/*
+	 * Help method to calculate the next state from a certain state.
+	 */
 	private State getNextState(int row, int col, int direction) {
 		switch (direction){
 			case 0:
@@ -247,6 +308,10 @@ public class MatrixCreator {
 		}
 	}
 	
+	/*
+	 * Help method for the transitionmatrix method. Calcculates the probabilities for the
+	 * transition part.
+	 */
 	private double getLeftovers(State currState, State nextState) {
 		if (!stateExists(nextState)) {
 			return 1.0;
@@ -255,6 +320,10 @@ public class MatrixCreator {
 		return 0.3;
 	}
 	
+	/*
+	 * Help method for the transitionmatrix method. It calculates if a state is inside the
+	 * board or not.
+	 */
 	private boolean stateExists(State state) {
 		int row = state.getRow();
 		int col = state.getCol();
@@ -264,12 +333,19 @@ public class MatrixCreator {
 		return false;
 	}
 	
+	/*
+	 * Help method for the transitionmatrix method. Inserts the probability values into
+	 * the transitionmatrix
+	 */
 	private void setTransitionProb(State currState, State nextState, double probability) {
 		int currStateIdx = getStateIdx(currState);
 		int nextStateIdx = getStateIdx(nextState);
 		transitionMatrix[currStateIdx][nextStateIdx] = probability;
 	}
 	
+	/*
+	 * Help method to get the linear index from a certain state.
+	 */
 	private int getStateIdx(State state) {
 		int row = state.getRow();
 		int col = state.getCol();
@@ -277,23 +353,31 @@ public class MatrixCreator {
 		return col*nDirections + dir + row*cols*nDirections;
 	}
 	
+	/*
+	 * Method to calculate the probability to go from point (row, col) -> (rRow, rCol).
+	 *
+	 */
 	public double getTProb(int row, int col, int h, int rRow, int rCol, int rH) {
 		int currStateIdx = getStateIdx(new State(row, col, h));
-
 		int nextStateIdx = getStateIdx(new State(rRow, rCol, rH));
-//		return transitionMatrix[0][7];
-		System.out.println(row + " " + col + " " + h + "   " + rRow + " " + rCol + " " + rH + "    " + transitionMatrix[row*rows+col*cols + h][rRow*rows+rCol*cols + rH]);
 		return transitionMatrix[currStateIdx][nextStateIdx];
 	}
+	
+	/*
+	 * Calculates the probability that the robot is in the point (row, col)
+	 */
 	
 	public double getStateProb(int row, int col) {
 		double sum = 0;
 		for (int i = 0; i < 4; i++) {
-			sum += stateProb[rows*row + cols*col + i];
+			sum += stateProb[cols*row*4 + col*4 + i];
 		}
 		return sum;
 	}
 	
+	/*
+	 * Mainmethod to debug the program
+	 */
 	public static void main(String[] args) {
 		MatrixCreator mc = new MatrixCreator(3, 3, 4);
 		mc.printTransitionMatrix();

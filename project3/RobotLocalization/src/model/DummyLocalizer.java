@@ -11,6 +11,15 @@ public class DummyLocalizer implements EstimatorInterface {
 		this.cols = cols;
 		this.head = head;
 		
+		int nbrStates = rows*cols*head;
+		double[][] tM = new double[nbrStates][nbrStates];
+		for (int i = 0; i<rows; i++) {
+			for (int j = 0; j<cols; j++) {
+				for (int d = 0; d < head; d++) {
+					rM[i + d][j]
+				}
+			}
+		}
 	}	
 	
 	public int getNumRows() {

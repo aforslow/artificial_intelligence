@@ -23,6 +23,7 @@ public class RobotLocalizationViewer {
 	private int sXCount, sYCount, tXCount, tYCount, tHCount;
 	private boolean runFlag, initFlag;
 	double dist = 0;
+	int nIters = 0;
 	
 	public RobotLocalizationViewer( EstimatorInterface l) {
 		loc = l;
@@ -216,8 +217,10 @@ public class RobotLocalizationViewer {
 			states[maxX][maxY][1].setBackground(Color.lightGray);
 			states[maxX][maxY][2].setBackground(Color.lightGray);
 			states[maxX][maxY][3].setBackground(Color.lightGray);
-			dist = ((double) dist + Math.abs(maxX - tX) + Math.abs(maxY - tY)) / 2;
-			System.out.println("Average distance: " + dist);
+			dist += (double) Math.abs(maxX - tX) + Math.abs(maxY - tY);
+			nIters++;
+//			dist = dist / ((double) nIters);
+			System.out.println("Average distance: " + dist / ((double) nIters));
 			System.out.println("y1: " + maxY);
 			System.out.println("x1: " + maxX);
 		}

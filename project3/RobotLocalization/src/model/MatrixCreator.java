@@ -176,6 +176,10 @@ public class MatrixCreator {
 		return false;
 	}
 	
+	/*
+	 * Checks amount of nearby neighbours to a spot.
+	 * The size parameter decides which circle around spot to count.
+	 */
 	private int checkNearbyNeighbours(State state, int size) {
 		int neighbours = 0;
 		

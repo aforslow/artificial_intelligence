@@ -3,7 +3,7 @@ package model;
 public class SImulateRobot {
 	static int[][] board = new int[10][10];
 	public static void main(String[] args) {
-		RealLocalizer test = new RealLocalizer(10, 10, 4);
+		LocalizerTest test = new LocalizerTest(10, 10, 4);
 		
 		try {
 			while (true) {

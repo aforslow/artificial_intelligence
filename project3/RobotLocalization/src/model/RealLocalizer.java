@@ -5,6 +5,7 @@ import java.util.Random;
 public class RealLocalizer implements EstimatorInterface {
 		
 	private int rows, cols, head, x, y, direction, nbrStates;
+	private int rX, rY;
 	private State[] observations;
 	private double[][] transMatrix;
 	public static Random rand = new Random();
@@ -23,13 +24,6 @@ public class RealLocalizer implements EstimatorInterface {
 		y = rand.nextInt(cols);
 		direction = rand.nextInt(head) + 1;
 		c = new MatrixCreator(rows, cols, head);
-		
-//		observations = new State[nbrStates];
-//		transMatrix = new double[nbrStates][nbrStates];
-//		
-//		int[] temp = getCurrentReading();
-//		observations[observationCounter++] = new State(temp[1], temp[0], direction);
-		
 	}	
 	
 	public int getNumRows() {
@@ -53,10 +47,6 @@ public class RealLocalizer implements EstimatorInterface {
 	}
 
 	public double getOrXY( int rX, int rY, int x, int y) {
-		//converting coordinates to suit our structure
-//		x = x - 2;
-//		y = y - 2;
-		
 		int tempCol = Math.abs(rX - x);
 		int tempRow = Math.abs(rY - y);
 		if (2 == tempRow  && 2 >= tempCol) {
@@ -99,9 +89,9 @@ public class RealLocalizer implements EstimatorInterface {
 
 	
 	public int[] getCurrentReading() {
-		int[] ret = new int[2];
-		int rX;
-		int rY;
+		int rX = -1;
+		int rY = -1;
+		boolean check = false;
 		int area = rand.nextInt(10) + 1;
 		if (area == 1) {
 			rX = x;
@@ -110,26 +100,27 @@ public class RealLocalizer implements EstimatorInterface {
 			int[] temp = translateNbrCircle(true);
 			rX = x - temp[1];
 			rY = y - temp[0];
-			ret = new int[]{rX, rY};
 			if (!UtilityModel.isInside(rX, rY, rows, cols)) {
-				return null;
+				this.rX = -1;
+				this.rY = -1;
+				check = true;
 			}
 		} else if (6 <= area && area < 10) {
 			int[] temp = translateNbrCircle(false);
 			rX = x - temp[1];
 			rY = y - temp[0];
 			if (!UtilityModel.isInside(rX, rY, rows, cols)) {
-				return null;
+				this.rX = -1;
+				this.rY = -1;
+				check = true;
 			}
 		} else {
-			rX = -1;
-			rY = -1;
-			
+			this.rX = -1;
+			this.rY = -1;
+			check = true;			
 		}
-		ret[0] = rX;
-		ret[1] = rY;
-		
-		return ret;
+		c.localizationOfRobot(rX, rY);
+		return check ?  null : new int[]{rX, rY};
 	}
 
 	
@@ -142,7 +133,7 @@ public class RealLocalizer implements EstimatorInterface {
 	}
 
 	public double getCurrentProb( int x, int y) {
-		return c.getStateProb(y, x);
+		return c.getStateProb(x, y);
 	}
 	
 	public void update() {
@@ -176,11 +167,6 @@ public class RealLocalizer implements EstimatorInterface {
 			y++;
 			break;
 		}
-		
-//		//new state
-//		int[] temp = getCurrentReading();
-//		observations[observationCounter++] = new State(temp[1], temp[0], direction);
-//		
 	}
 	
 	

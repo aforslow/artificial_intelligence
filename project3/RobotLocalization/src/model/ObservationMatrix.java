@@ -5,61 +5,82 @@ import java.util.LinkedList;
 public class ObservationMatrix {
 	private int rows, cols, nDirections;
 	private double[][] observationMatrix;
+	private double[] obs;
 
 	public ObservationMatrix(int rows, int cols, int nDirections) {
 		this.rows = rows;
 		this.cols = cols;
 		this.nDirections = nDirections;
-		createObservationMatrix();
+	//	createObservationMatrix();
+		createStateProbMatrix();
+	}
+	
+	private void createStateProbMatrix() {
+		obs = new double[rows*cols*nDirections];
+		for (int i = 0; i < rows*cols*nDirections; i++) {
+			obs[i] = 1.0/(rows*cols*nDirections);
+		}
+	}
+	
+	public void setstateProbMatrix(int rRow, int rCol) {
+		State oState = new State(rRow, rCol, 1);
+		for (int i = 0; i<rows; i++) {
+			for (int j = 0; j<cols; j++) {
+				for (int n = 0; n<nDirections; n++) {
+					State temp = new State(i, j, n);
+					LinkedList<State> sameBox = sameBox(temp);
+					LinkedList<State> innerBox = innerBox(temp);
+					LinkedList<State> outerBox = outerBox(temp);
+
+					for (State s : sameBox) {
+//						setObserveProb(observedState, s, 0.1);
+						obs[i*nDirections*cols + j*nDirections + n] = 0.1;
+					}
+					for (State s : innerBox) {
+//						setObserveProb(observedState, s, 0.05);
+						obs[i*nDirections*cols + j*nDirections + n] = 0.05;
+					}
+					for (State s : outerBox) {
+//						setObserveProb(observedState, s, 0.025);
+						obs[i*nDirections*cols + j*nDirections + n] = 0.025;
+					}
+				}
+			}
+		}
 	}
 
-	private void createObservationMatrix() {
-		observationMatrix = new double[rows * cols * nDirections + 1][rows * cols * nDirections];
+	private void createObservationMatrix(int or, int oc) {
+		observationMatrix = new double[rows * cols * nDirections][rows * cols * nDirections];
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < cols; col++) {
 				for (int dir = 0; dir < nDirections; dir++) {
-					setObservationProb(row, col, dir);
+					setObservationProb(row, col, dir, or, oc);
 				}
 			}
 		}
 	}
 
-	private void setObservationProb(int row, int col, int dir) {
-		State observedState = new State(row, col, dir);
-		LinkedList<State> sameBox = sameBox(observedState);
-		LinkedList<State> innerBox = innerBox(observedState);
-		LinkedList<State> outerBox = outerBox(observedState);
-		for (State s : sameBox) {
-			setObserveProb(observedState, s, 0.1);
-		}
-		for (State s : innerBox) {
-			setObserveProb(observedState, s, 0.05);
-		}
-		for (State s : outerBox) {
-			setObserveProb(observedState, s, 0.025);
-		}
-		setNothingProb();
-	}
-	
-	private void setNothingProb() {
-		for (int row=0; row < rows; row++) {
-			for (int col=0; col < cols; col++) {
-				for (int dir=0; dir < nDirections; dir++) {
-					State s = new State(row, col, dir);
-					observationMatrix[nDirections][getStateIdx(s)] = 1.0 - 0.1 - n_Ls(s)*0.05 - n_Ls2(s)*0.025;
+	private void setObservationProb(int row, int col, int dir, int or, int oc) {
+		State observedState = new State(row, col, 1);  //the direction is not needed in this case
+		if (observedState.isNothing()) {
+			
+		} else {
+			LinkedList<State> sameBox = sameBox(observedState);
+			LinkedList<State> innerBox = innerBox(observedState);
+			LinkedList<State> outerBox = outerBox(observedState);
+			for (int i = 0; i<rows*cols*nDirections; i++) {
+				for (State s : sameBox) {
+	//				setObserveProb(observedState, s, 0.1);
+					obs[i]
+				}
+				for (State s : innerBox) {
+					setObserveProb(observedState, s, 0.05);
+				}
+				for (State s : outerBox) {
+					setObserveProb(observedState, s, 0.025);
 				}
 			}
 		}
-	}
-	
-	//Returns number of surrounding first ring boxes for state s
-	private double n_Ls(State s) {
-		
-	}
-	
-	//Returns number of surrounding second ring boxes for state s
-	private double n_Ls2(State s) {
-		
 	}
 
 	private LinkedList<State> sameBox(State observedState) {

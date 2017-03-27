@@ -23,7 +23,9 @@ public class RobotLocalizationViewer {
 	private int sXCount, sYCount, tXCount, tYCount, tHCount;
 	private boolean runFlag, initFlag;
 	double dist = 0;
+	double correctLocation = 0;
 	int nIters = 0;
+	
 	
 	public RobotLocalizationViewer( EstimatorInterface l) {
 		loc = l;
@@ -217,12 +219,35 @@ public class RobotLocalizationViewer {
 			states[maxX][maxY][1].setBackground(Color.lightGray);
 			states[maxX][maxY][2].setBackground(Color.lightGray);
 			states[maxX][maxY][3].setBackground(Color.lightGray);
+			
+			//calculating the average distance between the real location and the estimated location
 			dist += (double) Math.abs(maxX - tX) + Math.abs(maxY - tY);
 			nIters++;
 //			dist = dist / ((double) nIters);
-			System.out.println("Average distance: " + dist / ((double) nIters));
-			System.out.println("y1: " + maxY);
-			System.out.println("x1: " + maxX);
+//			System.out.println("Average distance: " + dist / ((double) nIters));
+//			System.out.println("y1: " + maxY);
+//			System.out.println("x1: " + maxX);
+			
+			//To calculate how often we predict the correct location 
+			double max = -1;
+			int r = 0, c = 0;
+			for (int i = 0; i<loc.getNumRows(); i++) {
+				for (int j = 0; j<loc.getNumCols(); j++) {
+					if (max < loc.getCurrentProb(i, j)) {
+						r = i;
+						c = j;
+						max = loc.getCurrentProb(i, j);
+					}
+				}
+			}
+			
+			int[] realLoc = loc.getCurrentTruePosition();
+			if (realLoc[0] == r && realLoc[1] == c	) {
+				correctLocation++;
+			}
+			if (nIters % 50 == 0) {
+				System.out.println((double)correctLocation / (double) nIters);
+			}
 		}
 			
 		states[tX][tY][4].setBackground(Color.black);

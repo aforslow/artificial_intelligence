@@ -47,21 +47,11 @@ public class RealLocalizer implements EstimatorInterface {
 	}
 
 	public double getOrXY( int rX, int rY, int x, int y) {
-		int tempCol = Math.abs(rX - x);
-		int tempRow = Math.abs(rY - y);
-		if (2 == tempRow  && 2 >= tempCol) {
-			return 0.025;
-		} else if (tempRow <= 1 && tempCol == 2) {
-			return 0.025;
-		} else if (tempRow == 1 && tempCol <= 1) {
-			return 0.05;
-		} else if (tempRow == 0 && tempCol == 1) {
-			return 0.05;
-		} else if (tempCol + tempRow == 0) {
-			return 0.1;
-		} else {
-			return 0;
-		}
+		// create a observation matrix from the sensor location
+		double[] obs = c.getObsMatrix(new State(rX, rY, 0));
+		
+		//return the probability of being at (x, y)
+		return obs[c.getStateIdx(new State(x, y, 0))];
 	}
 
 

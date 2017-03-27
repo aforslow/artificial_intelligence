@@ -350,7 +350,7 @@ public class MatrixCreator {
 	/*
 	 * Help method to get the linear index from a certain state.
 	 */
-	private int getStateIdx(State state) {
+	public int getStateIdx(State state) {
 		int row = state.getRow();
 		int col = state.getCol();
 		int dir = state.getDirection();
